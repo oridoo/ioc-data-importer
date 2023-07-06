@@ -1,9 +1,8 @@
-from src import database, config
-import logging
-import importlib
-import time
-import sys
 import argparse
+import importlib
+import logging
+import sys
+import time
 
 
 def process_handler(handler: str) -> None:
@@ -11,8 +10,7 @@ def process_handler(handler: str) -> None:
     with database.Database() as db:
         try:
             module = importlib.import_module(f"src.handlers.{handler}")
-            handler_class = getattr(module, f"{handler.capitalize()}Source")
-            handler = handler_class()
+            handler = module.DataSource()
         except Exception as e:
             logging.error(f"Error importing handler {handler}: {e}")
             return
@@ -22,10 +20,10 @@ def process_handler(handler: str) -> None:
         logging.info(f"Running handler {handler.source_name} ...")
 
         if handler.type == "url":
-            for url in handler:
+            for url in handler.generator():
                 db.insert_url(handler.source_id, url)
         elif handler.type == "ip":
-            for ip in handler:
+            for ip in handler.generator():
                 db.insert_ip(handler.source_id, ip)
         else:
             logging.error(f"Handler {handler.source_name} has invalid type {handler.type}")
@@ -41,8 +39,11 @@ if __name__ == "__main__":
 
     logging.basicConfig(
         level=logging.DEBUG if args.verbose else logging.INFO,
-        format="%(asctime)s - %(levelname)s - %(message)s",
-        stream=sys.stdout)
+        format="ioc-data-importer: %(levelname)s - %(message)s",
+        stream=sys.stdout
+    )
+
+    from src import database, config
 
     for source in config.valid_handlers(config.CONFIG):
         process_handler(source)
