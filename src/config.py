@@ -5,7 +5,7 @@ from importlib import util as importlib_util
 from typing import List, Dict
 
 
-def valid_handlers(config: Dict[str, List[str]]) -> List[str]:
+def valid_handlers(config: Dict) -> List[str]:
     """
     :param config: config dict
     :return: list of valid handlers from the config file
@@ -20,7 +20,7 @@ def valid_handlers(config: Dict[str, List[str]]) -> List[str]:
     return handlers
 
 
-def default_config(path: str) -> Dict[str, Dict[str, str]]:
+def default_config(path: str) -> Dict:
     base = {
         "database": {
             "host": "localhost",
@@ -38,7 +38,7 @@ def default_config(path: str) -> Dict[str, Dict[str, str]]:
     return base
 
 
-def read_config() -> Dict[str, Dict[str, str]]:
+def read_config() -> Dict:
     path = os.path.join(os.path.dirname(__file__), os.pardir, "config.json")
 
     if not os.path.exists(path):

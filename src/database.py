@@ -1,6 +1,9 @@
-from psycopg2 import connect, sql, Error
-from src.config import CONFIG
 import logging
+
+from psycopg2 import connect, sql, Error
+from typing import Dict
+
+from src.config import CONFIG
 
 
 class Database(object):
@@ -16,7 +19,7 @@ class Database(object):
             self.__initialize()
             return self
         except Error as e:
-            logging.error(f"Error connecting to database: {e}")
+            logging.error(f"Error creating connection to the database.")
             raise e
 
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
@@ -30,14 +33,19 @@ class Database(object):
             self.cursor.execute(sql.SQL(f.read()))
         logging.debug("Initialized database")
 
-    def __source_exists(self, source: dict) -> int:
+    def __source_exists(self, source: Dict) -> int:
         self.cursor.execute(
             sql.SQL("SELECT id FROM sources WHERE name = %s"),
             (source["source_name"],)
         )
         return self.cursor.fetchone()
 
-    def insert_source(self, source: dict) -> dict:
+    def insert_source(self, source: Dict) -> Dict:
+        """
+        Inserts a source into the database if it does not already exist.
+        :param source:
+        :return: data source vars dict with updated source_id either from the database or from the insert
+        """
         sid = self.__source_exists(source)
         if sid:
             logging.debug(f"Source {source['source_name']} already exists")
